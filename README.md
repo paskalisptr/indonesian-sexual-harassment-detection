@@ -1,84 +1,82 @@
-# Deteksi Kekerasan Seksual Berbahasa Indonesia di Media Sosial X
+# Indonesian Sexual Harassment Detection on Social Media X
 
-Proyek klasifikasi teks untuk mendeteksi konten kekerasan seksual (KS) dalam tweet berbahasa Indonesia informal, membandingkan tiga pendekatan: model klasik, deep learning sekuensial, dan transformer berbasis IndoBERT.
+A text classification project to detect sexual harassment (SH) content in informal Indonesian tweets, comparing three approaches: a classical model, a sequential deep learning model, and an IndoBERT-based transformer.
 
-> Proyek kelompok (2 anggota) — dikerjakan untuk mata kuliah *Simulation Modelling and Analysis*. Kontribusi personal pada proyek ini: **seluruh pipeline modeling** (baseline TF-IDF+LR, BiLSTM-GRU, dan fine-tuning IndoBERT), termasuk evaluasi dan analisis hasil.
+> Group project (2 members) — completed for the *Simulation Modelling and Analysis* course. Personal contribution: **the entire modeling pipeline** (TF-IDF+LR baseline, BiLSTM-GRU, and IndoBERT fine-tuning), including evaluation and result analysis.
 
 ---
 
-## Latar Belakang
+## Background
 
-Pelecehan seksual melalui media sosial (khususnya Twitter/X) meningkat di Indonesia — data Komnas Perempuan mencatat kenaikan 35% kasus pada 2024, dan kasus-kasus viral memicu ratusan ribu mention di X dalam waktu singkat. Namun, sistem deteksi otomatis untuk bahasa Indonesia masih terbatas, terutama untuk menangani teks informal yang penuh slang dan *code-switching*.
+Sexual harassment on social media (particularly Twitter/X) is rising in Indonesia — Komnas Perempuan (Indonesia's National Commission on Violence Against Women) recorded a 35% increase in reported cases in 2024, and viral cases have triggered hundreds of thousands of mentions on X within a short time. However, automated detection systems for Indonesian remain limited, especially for handling informal text full of slang and code-switching.
 
-Proyek ini membangun dan membandingkan tiga model klasifikasi untuk mendeteksi konten KS dari teks tweet bahasa Indonesia.
+This project builds and compares three classification models to detect SH content from Indonesian tweet text.
 
 ## Dataset
 
-- **Sumber:** Tweet dari X/Twitter, dikumpulkan menggunakan Tweet-Harvest (Jan–Feb 2026, ~55 kata kunci unik)
-- **Ukuran:** 1.608 tweet setelah preprocessing & deduplication
-  - Non-KS: 1.221 (75,6%)
-  - KS: 387 (24,4%)
-  - *Imbalance ratio* 3,18:1
+- **Source:** Tweets from X/Twitter, collected using Tweet-Harvest (Jan–Feb 2026, ~55 unique keywords)
+- **Size:** 1,608 tweets after preprocessing & deduplication
+  - Non-SH: 1,221 (75.6%)
+  - SH: 387 (24.4%)
+  - Imbalance ratio: 3.18:1
 
 ### Preprocessing (Semantic-Preserving Pipeline)
-Pipeline preprocessing dirancang untuk mempertahankan makna semantik teks (tidak menggunakan stemming agresif), meliputi: case folding, penghapusan URL, anonimisasi mention (`@user` → token generik), konversi emoji ke token deskriptif, normalisasi elongasi karakter (`sangeeeee` → `sangee`), serta tokenisasi dengan whitelist negasi (`tidak`, `bukan`, `jangan`) agar makna penyangkalan tidak hilang saat stopword removal.
+The preprocessing pipeline was designed to preserve semantic meaning (no aggressive stemming), including: case folding, URL removal, mention anonymization (`@username` → generic token), emoji-to-descriptive-token conversion, character elongation normalization (`soooo` → `soo`), and tokenization with a negation whitelist (`tidak`, `bukan`, `jangan` — Indonesian negation words) so that negation meaning isn't lost during stopword removal.
 
-## Metode
+## Methods
 
-Tiga model dibangun dan dibandingkan secara head-to-head:
+Three models were built and compared head-to-head:
 
-| Model | Tipe | Catatan |
+| Model | Type | Notes |
 |---|---|---|
-| TF-IDF + Logistic Regression | Baseline klasik | Dioptimasi dengan SMOTE, GridSearchCV, Stratified K-Fold |
-| BiLSTM-GRU | Deep learning sekuensial | Menangkap dependensi kontekstual antar kata |
-| IndoBERT (fine-tuned) | Transformer | `indobenchmark/indobert-base-p2`, fine-tuned untuk klasifikasi biner |
+| TF-IDF + Logistic Regression | Classical baseline | Optimized with SMOTE, GridSearchCV, Stratified K-Fold |
+| BiLSTM-GRU | Sequential deep learning | Captures contextual word dependencies |
+| IndoBERT (fine-tuned) | Transformer | `indobenchmark/indobert-base-p2`, fine-tuned for binary classification |
 
-**Pipeline tambahan:** Chi-Square & RFE untuk feature selection, SMOTE untuk menangani class imbalance, TruncatedSVD/t-SNE untuk eksplorasi dimensionality reduction.
+**Additional pipeline:** Chi-Square & RFE for feature selection, SMOTE for class imbalance handling, TruncatedSVD/t-SNE for dimensionality reduction exploration.
 
 **Tools:** Python, PyTorch, scikit-learn, imbalanced-learn (imblearn), Hugging Face Transformers
 
-## Hasil
+## Results
 
-| Model | F1-Macro | ROC-AUC | Waktu Training |
+| Model | F1-Macro | ROC-AUC | Training Time |
 |---|---|---|---|
 | TF-IDF + LR | 0.7539 | 0.8525 | 0.04s |
 | BiLSTM-GRU | 0.7040 | 0.7765 | 101.3s |
 | **IndoBERT** | **0.7902** | **0.8744** | 41.4s |
 
-IndoBERT memberikan performa terbaik dengan waktu training jauh lebih efisien dibanding BiLSTM-GRU, berkat pengetahuan bahasa Indonesia yang sudah dipelajari saat pre-training. Model ini mencapai performa optimal hanya di epoch pertama — fine-tuning lebih lanjut menyebabkan *catastrophic forgetting*.
+IndoBERT delivered the best performance with far better training efficiency than BiLSTM-GRU, thanks to the Indonesian language knowledge already learned during pre-training. The model reached optimal performance after just one epoch — further fine-tuning led to catastrophic forgetting.
 
-### Temuan Analitis Lain
-- 23,5% keyword scraping menunjukkan *lexical bias* (IoU > 0,5), mengindikasikan potensi sampling bias dari pendekatan keyword-based scraping
-- *Feature selection* berbasis Chi-Square justru menurunkan performa TF-IDF pada teks pendek — PCA/TruncatedSVD tidak efektif untuk representasi sparse di kasus ini
-- Ketiga model konsisten menghasilkan lebih banyak *false negative* daripada *false positive* — cenderung *underpredict* kelas minoritas (KS), pertimbangan penting untuk use-case ini karena melewatkan kasus nyata lebih berisiko daripada false alarm
+### Other Analytical Findings
+- 23.5% of scraping keywords showed lexical bias (IoU > 0.5), indicating potential sampling bias from the keyword-based scraping approach
+- Chi-Square-based feature selection actually decreased TF-IDF performance on short text — PCA/TruncatedSVD proved ineffective for sparse representations in this case
+- All three models consistently produced more false negatives than false positives — tending to underpredict the minority class (SH), an important consideration for this use case since missing real cases is riskier than a false alarm
 
-## Limitasi
+## Limitations
 
-- Ukuran dataset (N=1.608) relatif kecil untuk model deep learning sekuensial
-- Scraping berbasis keyword vulgar berpotensi melewatkan tweet KS yang tidak menggunakan kata vulgar eksplisit
-- Model hanya divalidasi pada platform X, belum diuji di platform lain (Instagram, TikTok)
-- Definisi kekerasan seksual bersifat kultural dan kontekstual — model memerlukan adaptasi untuk konteks daerah/komunitas berbeda
+- Dataset size (N=1,608) is relatively small for sequential deep learning models
+- Vulgar-keyword-based scraping may miss SH tweets that don't use explicit vulgar language
+- The model was only validated on the X platform, not yet tested on other platforms (Instagram, TikTok)
+- The definition of sexual harassment is cultural and contextual — the model would need adaptation for different regional/community contexts
 
 ## Future Work
 
-- Memperluas dataset (target 5.000 sampel per kelas) melalui augmentasi data
-- Eksplorasi IndoBERTweet (model yang dilatih khusus pada data Twitter Indonesia)
-- Strategi scraping multi-sumber untuk mengurangi lexical bias
-- Validasi lintas platform dan analisis *concept drift* dari waktu ke waktu
+- Expand the dataset (targeting 5,000 samples per class) through data augmentation
+- Explore IndoBERTweet (a model specifically pre-trained on Indonesian Twitter data)
+- Multi-source scraping strategy to reduce lexical bias
+- Cross-platform validation and concept drift analysis over time
 
-## Struktur Repository
+## Repository Structure
 
 ```
 ├── deteksi_kekerasan_seksual.ipynb   # preprocessing, TF-IDF+LR, BiLSTM-GRU, IndoBERT — end-to-end
-├── data/                              # (atau .gitignore jika berisi data sensitif)
+├── dataset_preprocessed.csv
 └── README.md
 ```
 
-> ⚠️ Ganti nama file notebook di atas dengan nama file aslimu sebelum upload.
+The entire pipeline (preprocessing → three models → evaluation) is contained in a single notebook, organized with section headings (e.g. `## 1. Preprocessing`, `## 2. Baseline: TF-IDF + LR`, etc.) for easy navigation.
 
-Seluruh pipeline (preprocessing → tiga model → evaluasi) ada dalam satu notebook. Gunakan heading/section di dalam notebook (misal `## 1. Preprocessing`, `## 2. Baseline: TF-IDF + LR`, dst) supaya recruiter yang membuka notebook bisa langsung navigasi tanpa scroll bingung — kalau notebookmu belum punya heading section yang jelas, ini worth ditambahkan sebelum upload.
-
-## Referensi
+## References
 
 - Koto, F., et al. (2020). IndoLEM and IndoBERT. *COLING*.
 - Koto, F., Lau, J. H., & Baldwin, T. (2021). IndoBERTweet. *IALP*.

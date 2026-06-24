@@ -2,13 +2,13 @@
 
 A text classification project to detect sexual harassment (SH) content in informal Indonesian tweets, comparing three approaches: a classical model, a sequential deep learning model, and an IndoBERT-based transformer.
 
-> Group project (2 members) — completed for the *Simulation Modelling and Analysis* course. Personal contribution: **the entire modeling pipeline** (TF-IDF+LR baseline, BiLSTM-GRU, and IndoBERT fine-tuning), including evaluation and result analysis.
+> Group project (2 members), completed for the *Simulation Modelling and Analysis* course. Personal contribution: **the entire modeling pipeline** (TF-IDF+LR baseline, BiLSTM-GRU, and IndoBERT fine-tuning), including evaluation and result analysis.
 
 ---
 
 ## Background
 
-Sexual harassment on social media (particularly Twitter/X) is rising in Indonesia — Komnas Perempuan (Indonesia's National Commission on Violence Against Women) recorded a 35% increase in reported cases in 2024, and viral cases have triggered hundreds of thousands of mentions on X within a short time. However, automated detection systems for Indonesian remain limited, especially for handling informal text full of slang and code-switching.
+Sexual harassment on social media (particularly Twitter/X) is rising in Indonesia. Komnas Perempuan (Indonesia's National Commission on Violence Against Women) recorded a 35% increase in reported cases in 2024, and viral cases have triggered hundreds of thousands of mentions on X within a short time. However, automated detection systems for Indonesian remain limited, especially for handling informal text full of slang and code-switching.
 
 This project builds and compares three classification models to detect SH content from Indonesian tweet text.
 
@@ -21,7 +21,7 @@ This project builds and compares three classification models to detect SH conten
   - Imbalance ratio: 3.18:1
 
 ### Preprocessing (Semantic-Preserving Pipeline)
-The preprocessing pipeline was designed to preserve semantic meaning (no aggressive stemming), including: case folding, URL removal, mention anonymization (`@username` → generic token), emoji-to-descriptive-token conversion, character elongation normalization (`soooo` → `soo`), and tokenization with a negation whitelist (`tidak`, `bukan`, `jangan` — Indonesian negation words) so that negation meaning isn't lost during stopword removal.
+The preprocessing pipeline was designed to preserve semantic meaning (no aggressive stemming), including: case folding, URL removal, mention anonymization (`@username` → generic token), emoji-to-descriptive-token conversion, character elongation normalization (`soooo` → `soo`), and tokenization with a negation whitelist (`tidak`, `bukan`, `jangan`, Indonesian negation words) so that negation meaning isn't lost during stopword removal.
 
 ## Methods
 
@@ -45,19 +45,19 @@ Three models were built and compared head-to-head:
 | BiLSTM-GRU | 0.7040 | 0.7765 | 101.3s |
 | **IndoBERT** | **0.7902** | **0.8744** | 41.4s |
 
-IndoBERT delivered the best performance with far better training efficiency than BiLSTM-GRU, thanks to the Indonesian language knowledge already learned during pre-training. The model reached optimal performance after just one epoch — further fine-tuning led to catastrophic forgetting.
+IndoBERT delivered the best performance with far better training efficiency than BiLSTM-GRU, thanks to the Indonesian language knowledge already learned during pre-training. The model reached optimal performance after just one epoch; further fine-tuning led to catastrophic forgetting.
 
 ### Other Analytical Findings
 - 23.5% of scraping keywords showed lexical bias (IoU > 0.5), indicating potential sampling bias from the keyword-based scraping approach
-- Chi-Square-based feature selection actually decreased TF-IDF performance on short text — PCA/TruncatedSVD proved ineffective for sparse representations in this case
-- All three models consistently produced more false negatives than false positives — tending to underpredict the minority class (SH), an important consideration for this use case since missing real cases is riskier than a false alarm
+- Chi-Square-based feature selection actually decreased TF-IDF performance on short text. PCA/TruncatedSVD proved ineffective for sparse representations in this case
+- All three models consistently produced more false negatives than false positives, tending to underpredict the minority class (SH). This is an important consideration for this use case, since missing real cases is riskier than a false alarm
 
 ## Limitations
 
 - Dataset size (N=1,608) is relatively small for sequential deep learning models
 - Vulgar-keyword-based scraping may miss SH tweets that don't use explicit vulgar language
 - The model was only validated on the X platform, not yet tested on other platforms (Instagram, TikTok)
-- The definition of sexual harassment is cultural and contextual — the model would need adaptation for different regional/community contexts
+- The definition of sexual harassment is cultural and contextual, so the model would need adaptation for different regional/community contexts
 
 ## Future Work
 
@@ -69,7 +69,7 @@ IndoBERT delivered the best performance with far better training efficiency than
 ## Repository Structure
 
 ```
-├── deteksi_kekerasan_seksual.ipynb   # preprocessing, TF-IDF+LR, BiLSTM-GRU, IndoBERT — end-to-end
+├── deteksi_kekerasan_seksual.ipynb   # preprocessing, TF-IDF+LR, BiLSTM-GRU, IndoBERT (end-to-end)
 ├── dataset_preprocessed.csv
 └── README.md
 ```
